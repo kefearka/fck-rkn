@@ -90,12 +90,20 @@ mkdir -p /usr/local/etc/xray
 # Read client UUIDs from params.env
 CLIENTS_JSON=""
 CLIENT_COUNT=0
+UUIDS_ARRAY=()
 for var in $(grep "^CLIENT_.*_UUID=" "$TEMP_PARAMS" | cut -d= -f1 | sort -V); do
-    UUID="${!var}"
-    CLIENTS_JSON+="      {\"id\": \"$UUID\", \"flow\": \"xtls-rprx-vision\"},"$'\n'
+    UUIDS_ARRAY+=("${!var}")
     CLIENT_COUNT=$((CLIENT_COUNT + 1))
 done
-CLIENTS_JSON=$(echo "$CLIENTS_JSON" | sed '$ s/,$//')
+LAST_INDEX=$((${#UUIDS_ARRAY[@]} - 1))
+for i in "${!UUIDS_ARRAY[@]}"; do
+    UUID="${UUIDS_ARRAY[$i]}"
+    if [ "$i" -lt "$LAST_INDEX" ]; then
+        CLIENTS_JSON+="      {\"id\": \"$UUID\", \"flow\": \"xtls-rprx-vision\"},"$'\n'
+    else
+        CLIENTS_JSON+="      {\"id\": \"$UUID\", \"flow\": \"xtls-rprx-vision\"}"$'\n'
+    fi
+done
 
 echo "  Restored clients: $CLIENT_COUNT"
 
