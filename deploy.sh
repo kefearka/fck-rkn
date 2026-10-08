@@ -70,10 +70,15 @@ mkdir -p /usr/local/etc/xray
 
 # Build clients array for JSON
 CLIENTS_JSON=""
-for UUID in "${CLIENT_UUIDS[@]}"; do
-    CLIENTS_JSON+="      {\"id\": \"$UUID\", \"flow\": \"xtls-rprx-vision\"},"$'\n'
+LAST_INDEX=$((${#CLIENT_UUIDS[@]} - 1))
+for i in "${!CLIENT_UUIDS[@]}"; do
+    UUID="${CLIENT_UUIDS[$i]}"
+    if [ "$i" -lt "$LAST_INDEX" ]; then
+        CLIENTS_JSON+="      {\"id\": \"$UUID\", \"flow\": \"xtls-rprx-vision\"},"$'\n'
+    else
+        CLIENTS_JSON+="      {\"id\": \"$UUID\", \"flow\": \"xtls-rprx-vision\"}"$'\n'
+    fi
 done
-CLIENTS_JSON=$(echo "$CLIENTS_JSON" | sed '$ s/,$//')
 
 cat > /usr/local/etc/xray/config.json << EOF
 {
