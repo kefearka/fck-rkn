@@ -49,9 +49,16 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 # [3/8] Generate keys and UUIDs
 # ============================================================================
 echo -e "${GREEN}[3/8] Generating Reality keys and client UUIDs...${NC}"
-KEYS=$(xray x25519)
-PRIVATE_KEY=$(echo "$KEYS" | grep "Private" | awk '{print $3}')
-PUBLIC_KEY=$(echo "$KEYS" | grep "Public" | awk '{print $3}')
+KEYS=$(xray x25519 2>&1)
+PRIVATE_KEY=$(echo "$KEYS" | grep -i "private" | awk '{print $NF}' | tr -d '[:space:]')
+PUBLIC_KEY=$(echo "$KEYS" | grep -i "public" | awk '{print $NF}' | tr -d '[:space:]')
+
+# Check empty keys
+if [ -z "$PRIVATE_KEY" ] || [ -z "$PUBLIC_KEY" ]; then
+    echo -e "${RED}ERROR: Failed to generate Reality keys. Output was:${NC}"
+    echo "$KEYS"
+    exit 1
+fi
 SHORT_ID=$(openssl rand -hex 8)
 
 # Generate UUID for each client
